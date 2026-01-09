@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Category;
+use Illuminate\Support\Facades\Auth;
 
 class CategoryController extends Controller
 {
@@ -27,7 +28,7 @@ class CategoryController extends Controller
     }
 
     // function to get all catgories
-    public function getCategories() {
+    public function getCategories(Request $request) {
         $categories = Category::select(
             'id',
             'category_name',
@@ -35,6 +36,26 @@ class CategoryController extends Controller
             'created_by',
             'created_at',
         )->get();
+
+        $role = $request->query('role');
+
+        if($role === 'admin') {
+            $categories = Category::select(
+                'id',
+                'category_name',
+                'category_details',
+                'created_by',
+                'created_at',
+            )->get();
+        }else {
+            $categories = Category::select(
+                'id',
+                'category_name',
+                'category_details',
+                'created_by',
+                'created_at',
+            )->where('created_by', 'user')->get();
+        }
 
         return response()->json($categories, 200);
     }
@@ -70,5 +91,12 @@ class CategoryController extends Controller
         ]);
 
         return response()->json(['message' => 'Category updated successfully']);
+    }
+
+    // to delete category
+    public function deleteCategory($id) {
+        Category::findOrFail($id)->delete();
+
+        return response()->json(['message' => 'Category deleted successfully']);
     }
 }

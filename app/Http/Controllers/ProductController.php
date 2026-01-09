@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use Illuminate\Http\Request;
 use App\Models\Product;
 
@@ -42,17 +43,32 @@ class ProductController extends Controller
     }
 
     // function to get all products
-    public function getProducts() {
-        $products = Product::select(
-            'id',
-            'product_name',
-            'product_description',
-            'product_price',
-            'product_image',
-            'product_category',
-            'product_company',
-            'created_by',
-        )->get();
+    public function getProducts(Request $request) {
+        $role = $request->query('role');
+
+        if($role === 'admin') {
+            $products = Product::select(
+                'id',
+                'product_name',
+                'product_description',
+                'product_price',
+                'product_image',
+                'product_category',
+                'product_company',
+                'created_by',
+            )->get();
+        } else {
+            $products = Product::select(
+                'id',
+                'product_name',
+                'product_description',
+                'product_price',
+                'product_image',
+                'product_category',
+                'product_company',
+                'created_by',
+            )->where('created_by', 'user')->get();
+        }
 
         return response()->json($products, 200);
     }

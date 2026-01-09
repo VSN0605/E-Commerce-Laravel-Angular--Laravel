@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 // use Illuminate\Container\Attributes\Auth;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+
 
 class UserController extends Controller
 {
@@ -42,20 +44,27 @@ class UserController extends Controller
 
     // to get all users
     public function index(Request $request) {
+        $role = $request->query('role');
 
-        $user = $request->user();   // logged-in user
-        $role = $user->user_role;
-
-        // dd($user);
-    
-        $users = User::select(
-            'id',
-            'user_name',
-            'user_email',
-            'user_role',
-            'profile_image',
-            'created_at',
-        )->get();
+        if($role === 'admin') {
+            $users = User::select(
+                'id',
+                'user_name',
+                'user_email',
+                'user_role',
+                'profile_image',
+                'created_at',
+            )->get();
+        } else {
+            $users = User::select(
+                'id',
+                'user_name',
+                'user_email',
+                'user_role',
+                'profile_image',
+                'created_at',
+            )->where('user_role', 'user')->get();
+        }
 
         return response()->json($users, 200);
     }

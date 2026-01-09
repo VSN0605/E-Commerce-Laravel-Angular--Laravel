@@ -56,3 +56,6 @@ Route::get('/category/{id}', [CategoryController::class, 'editCategory']);
 // to update product
 Route::put('/category/{id}', [CategoryController::class, 'updateCategory']);
 
+// to delete category
+Route::delete('/category/{id}', [CategoryController::class ,'deleteCategory']);
+
