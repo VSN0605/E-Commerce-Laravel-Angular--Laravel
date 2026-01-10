@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Category;
+use App\Models\Log;
 use Illuminate\Support\Facades\Auth;
 
 class CategoryController extends Controller
@@ -13,13 +14,20 @@ class CategoryController extends Controller
         $request->validate([
             'category_name' => 'required|string',
             'category_details' => 'required|string',
-            // 'created_by' => 'required|string',
+            'created_by' => 'required|string',
         ]);
 
         Category::create([
             'category_name' => $request->category_name,
             'category_details' => $request->category_details,
-            // 'created_by' => $request->user()->user_role,
+            'created_by' => $request->created_by,
+        ]);
+
+        Log::create([
+            'model' => 'Category',
+            'name' => $request->category_name,
+            'actions' => 'Create',
+            'performed_by' => $request->created_by,
         ]);
 
         return response()->json([
@@ -29,14 +37,7 @@ class CategoryController extends Controller
 
     // function to get all catgories
     public function getCategories(Request $request) {
-        $categories = Category::select(
-            'id',
-            'category_name',
-            'category_details',
-            'created_by',
-            'created_at',
-        )->get();
-
+        
         $role = $request->query('role');
 
         if($role === 'admin') {
@@ -90,12 +91,30 @@ class CategoryController extends Controller
             'category_details' => $request->category_details,
         ]);
 
+        Log::create([
+            'model' => 'Category',
+            'name' => $request->category_name,
+            'actions' => 'Update',
+            'performed_by' => $request->created_by,
+        ]);
+
         return response()->json(['message' => 'Category updated successfully']);
     }
 
     // to delete category
-    public function deleteCategory($id) {
-        Category::findOrFail($id)->delete();
+    public function deleteCategory(Request $request, $id) {
+        $category = Category::findOrFail($id);
+        $role = $request->query('role');
+        $categoryName = $category->category_name;
+
+        $category->delete();
+
+        Log::create([
+            'model' => 'Category',
+            'name' => $categoryName,
+            'actions' => 'Delete',
+            'performed_by' => $role,
+        ]);
 
         return response()->json(['message' => 'Category deleted successfully']);
     }

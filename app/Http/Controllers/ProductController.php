@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\Log;
 
 class ProductController extends Controller
 {
@@ -14,9 +15,9 @@ class ProductController extends Controller
             'product_description' => 'required|string',
             'product_price' => 'required|numeric|min:0',
             'product_image' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'product_category' => 'required|string',
+            'category_id' => 'required|integer',
             'product_company' => 'required|string',
-            // 'created_by' => 'required|string',
+            'created_by' => 'required|string',
         ]);
 
         $imageName = null;
@@ -32,9 +33,16 @@ class ProductController extends Controller
             'product_description' => $request->product_description,
             'product_price' => $request->product_price,
             'product_image' => $imageName,
-            'product_category' => $request->product_category,
+            'category_id' => $request->category_id,
             'product_company' => $request->product_company,
-            'created_by' => 'admin',
+            'created_by' => $request->created_by,
+        ]);
+
+        Log::create([
+            'model' => 'Product',
+            'name' => $request->product_name,
+            'actions' => 'Create',
+            'performed_by' => $request->created_by,
         ]);
 
         return response()->json([
@@ -53,7 +61,7 @@ class ProductController extends Controller
                 'product_description',
                 'product_price',
                 'product_image',
-                'product_category',
+                'category_id',
                 'product_company',
                 'created_by',
             )->get();
@@ -73,6 +81,19 @@ class ProductController extends Controller
         return response()->json($products, 200);
     }
 
+    // function to get category in dropdown
+    public function getDrodownCat() {
+        $categories = Category::select(
+            'id',
+            'category_name',
+            // 'category_details',
+            // 'created_by',
+            // 'created_at',
+        )->get();
+
+        return response()->json($categories, 200);
+    }
+
     // to get count of products
     public function categoryCount()
     {
@@ -84,8 +105,20 @@ class ProductController extends Controller
     }
 
     // to delete product
-    public function deleteProduct($id) {
-        Product::findOrFail($id)->delete();
+    public function deleteProduct(Request $request, $id) {
+        $product = Product::findOrFail($id);
+        $role = $request->query('role');
+        $productName = $product->product_name;
+        // $performedBy = $product->created_by;
+        
+        $product->delete();
+
+        Log::create([
+            'model' => 'Product',
+            'name' => $productName,
+            'actions' => 'Delete',
+            'performed_by' => $role,
+        ]);
 
         return response()->json(['message' => 'Product deleted successfully']);
     }
@@ -104,7 +137,7 @@ class ProductController extends Controller
             'product_name' => 'required|string',
             'product_description' => 'required|string',
             'product_price' => 'required|numeric|min:0',
-            'product_category' => 'required|string',
+            'category_id' => 'required|string',
             'product_company' => 'required|string',
         ]);
 
@@ -121,8 +154,15 @@ class ProductController extends Controller
             'product_description' => $request->product_description,
             'product_price' => $request->product_price,
             'product_image' => $imageName,
-            'product_category' => $request->product_category,
+            'category_id' => $request->category_id,
             'product_company' => $request->product_company,
+        ]);
+
+        Log::create([
+            'model' => 'Product',
+            'name' => $request->product_name,
+            'actions' => 'Update',
+            'performed_by' => $request->created_by,
         ]);
 
         return response()->json(['message' => 'Product updated successfully']);

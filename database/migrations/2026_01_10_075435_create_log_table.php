@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-
-        Schema::create('category', function (Blueprint $table) {
-            $table->engine = 'InnoDB';
+        Schema::create('log', function (Blueprint $table) {
             $table->id();
-            $table->string('category_name');
-            $table->string('category_details');
-            $table->string('created_by');
+            $table->string('model');
+            $table->string('name');
+            $table->string('actions');
+            $table->string('performed_by');
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('category');
+        Schema::dropIfExists('log');
     }
 };

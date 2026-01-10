@@ -13,4 +13,9 @@ class Category extends Model
         'category_details',
         'created_by',
     ];
+
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
 }

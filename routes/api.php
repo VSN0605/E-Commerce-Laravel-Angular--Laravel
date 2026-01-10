@@ -50,6 +50,9 @@ Route::get('/product/{id}', [ProductController::class, 'showProduct']);
 // to update product
 Route::put('/product/{id}', [ProductController::class, 'updateProduct']);
 
+// to get category in dropdown
+Route::get('/categories/dropdown', [ProductController::class, 'getDrodownCat']);
+
 // to get category data in form to edit
 Route::get('/category/{id}', [CategoryController::class, 'editCategory']);
 
