@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Log;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
@@ -23,6 +24,13 @@ class AuthController extends Controller
                 'message' => 'Invalid username or Password'
             ], 401);
         }
+
+        Log::create([
+            'model' => 'Login',
+            'name' => $user->user_name,
+            'actions' => 'Login',
+            'performed_by' => $user->user_role,
+        ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
         $auth_id =  Auth::id();

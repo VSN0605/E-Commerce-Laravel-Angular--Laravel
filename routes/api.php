@@ -50,6 +50,9 @@ Route::get('/product/{id}', [ProductController::class, 'showProduct']);
 // to update product
 Route::put('/product/{id}', [ProductController::class, 'updateProduct']);
 
+// get product detail
+Route::get('/product/product-detail/{id}', [ProductController::class, 'getProductDetail']);
+
 // to get category in dropdown
 Route::get('/categories/dropdown', [ProductController::class, 'getDrodownCat']);
 
@@ -61,4 +64,7 @@ Route::put('/category/{id}', [CategoryController::class, 'updateCategory']);
 
 // to delete category
 Route::delete('/category/{id}', [CategoryController::class ,'deleteCategory']);
+
+// to add log-out log
+Route::post('/user/logout', [UserController::class, 'logout']);
 

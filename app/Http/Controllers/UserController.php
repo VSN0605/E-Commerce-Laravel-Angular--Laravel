@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
-// use Illuminate\Container\Attributes\Auth;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Log;
+// use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 
@@ -46,25 +46,32 @@ class UserController extends Controller
     public function index(Request $request) {
         $role = $request->query('role');
 
-        if($role === 'admin') {
-            $users = User::select(
-                'id',
-                'user_name',
-                'user_email',
-                'user_role',
-                'profile_image',
-                'created_at',
-            )->get();
-        } else {
-            $users = User::select(
-                'id',
-                'user_name',
-                'user_email',
-                'user_role',
-                'profile_image',
-                'created_at',
-            )->where('user_role', 'user')->get();
+        $user_query = User::select();
+        if($role !== 'admin'){
+            $user_query->where('role', 'user');
         }
+        
+        $users = $user_query->get();
+        
+        // if($role === 'admin') {
+        //     $users = User::select(
+        //         'id',
+        //         'user_name',
+        //         'user_email',
+        //         'user_role',
+        //         'profile_image',
+        //         'created_at',
+        //     )->get();
+        // } else {
+        //     $users = User::select(
+        //         'id',
+        //         'user_name',
+        //         'user_email',
+        //         'user_role',
+        //         'profile_image',
+        //         'created_at',
+        //     )->where('user_role', 'user')->get();
+        // }
 
         return response()->json($users, 200);
     }
@@ -75,6 +82,22 @@ class UserController extends Controller
 
         return response()->json([
             'count' => $count
+        ], 200);
+    }
+
+    public function logout(Request $request) {
+        $role = $request->query('role');
+        $userName = $request->query('user_name');
+
+        Log::create([
+            'model' => 'User',
+            'name' => $userName,
+            'actions' => 'Logout',
+            'performed_by' => $role,
+        ]);
+
+        return response()->json([
+            'message' => 'Logout log added'
         ], 200);
     }
 }

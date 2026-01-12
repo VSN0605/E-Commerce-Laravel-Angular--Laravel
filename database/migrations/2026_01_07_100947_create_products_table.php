@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('product_description');
             $table->integer('product_price');
             $table->string('product_image');
+            $table->integer('product_quantity');
             $table->string('product_company');
             $table->foreignId('category_id')
                 ->constrained('category')

@@ -15,6 +15,7 @@ class ProductController extends Controller
             'product_description' => 'required|string',
             'product_price' => 'required|numeric|min:0',
             'product_image' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'product_quantity' => 'required|integer|min:1',
             'category_id' => 'required|integer',
             'product_company' => 'required|string',
             'created_by' => 'required|string',
@@ -33,6 +34,7 @@ class ProductController extends Controller
             'product_description' => $request->product_description,
             'product_price' => $request->product_price,
             'product_image' => $imageName,
+            'product_quantity' => $request->product_quantity,
             'category_id' => $request->category_id,
             'product_company' => $request->product_company,
             'created_by' => $request->created_by,
@@ -79,6 +81,20 @@ class ProductController extends Controller
         }
 
         return response()->json($products, 200);
+    }
+
+    public function getProductDetail($id) {
+        $product = Product::with('category') // optional
+        ->where('id', $id)
+        ->first();
+
+        if (!$product) {
+            return response()->json([
+                'message' => 'Product not found'
+            ], 404);
+        }
+
+        return response()->json($product);
     }
 
     // function to get category in dropdown
