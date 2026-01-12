@@ -57,24 +57,26 @@ class ProductController extends Controller
         $role = $request->query('role');
 
         if($role === 'admin') {
-            $products = Product::select(
+            $products = Product::with('category')->select(
                 'id',
                 'product_name',
                 'product_description',
                 'product_price',
                 'product_image',
+                'product_quantity',
                 'category_id',
                 'product_company',
                 'created_by',
             )->get();
         } else {
-            $products = Product::select(
+            $products = Product::with('category')->select(
                 'id',
                 'product_name',
                 'product_description',
                 'product_price',
                 'product_image',
-                'product_category',
+                'product_quantity',
+                'category_id',
                 'product_company',
                 'created_by',
             )->where('created_by', 'user')->get();
@@ -102,9 +104,7 @@ class ProductController extends Controller
         $categories = Category::select(
             'id',
             'category_name',
-            // 'category_details',
-            // 'created_by',
-            // 'created_at',
+            
         )->get();
 
         return response()->json($categories, 200);
