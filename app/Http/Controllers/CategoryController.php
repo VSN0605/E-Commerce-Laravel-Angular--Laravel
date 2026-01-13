@@ -11,6 +11,7 @@ class CategoryController extends Controller
 {
     // function to add category
     public function storeCategory(Request $request) {
+    
         $request->validate([
             'category_name' => 'required|string',
             'category_details' => 'required|string',
@@ -40,23 +41,31 @@ class CategoryController extends Controller
         
         $role = $request->query('role');
 
-        if($role === 'admin') {
-            $categories = Category::select(
-                'id',
-                'category_name',
-                'category_details',
-                'created_by',
-                'created_at',
-            )->get();
-        }else {
-            $categories = Category::select(
-                'id',
-                'category_name',
-                'category_details',
-                'created_by',
-                'created_at',
-            )->where('created_by', 'user')->get();
+        $category_query = Category::select();
+
+        if($role != 'admin') {
+            $category_query->where('created_by', 'user');
         }
+
+        $categories = $category_query->get();
+
+        // if($role === 'admin') {
+        //     $categories = Category::select(
+        //         'id',
+        //         'category_name',
+        //         'category_details',
+        //         'created_by',
+        //         'created_at',
+        //     )->get();
+        // }else {
+        //     $categories = Category::select(
+        //         'id',
+        //         'category_name',
+        //         'category_details',
+        //         'created_by',
+        //         'created_at',
+        //     )->where('created_by', 'user')->get();
+        // }
 
         return response()->json($categories, 200);
     }

@@ -56,35 +56,18 @@ class ProductController extends Controller
     public function getProducts(Request $request) {
         $role = $request->query('role');
 
-        if($role === 'admin') {
-            $products = Product::with('category')->select(
-                'id',
-                'product_name',
-                'product_description',
-                'product_price',
-                'product_image',
-                'product_quantity',
-                'category_id',
-                'product_company',
-                'created_by',
-            )->get();
-        } else {
-            $products = Product::with('category')->select(
-                'id',
-                'product_name',
-                'product_description',
-                'product_price',
-                'product_image',
-                'product_quantity',
-                'category_id',
-                'product_company',
-                'created_by',
-            )->where('created_by', 'user')->get();
+        $product_query = Product::select();
+
+        if($role != 'admin') {
+            $product_query->where('created_by', 'user');
         }
+
+        $products = $product_query->with('category')->get();
 
         return response()->json($products, 200);
     }
 
+    // to get product detail for view product
     public function getProductDetail($id) {
         $product = Product::with('category') // optional
         ->where('id', $id)
@@ -97,6 +80,60 @@ class ProductController extends Controller
         }
 
         return response()->json($product);
+    }
+
+    // to add stock quantity
+    public function addStock(Request $request, $id) {
+        $request->validate([
+            'product_quantity' => 'required|integer|min:1',
+        ]);
+        $role = $request->query('role');
+        $product = Product::findOrFail($id);
+
+        $totalQuantity = $request->product_quantity + $product->product_quantity;
+
+        $product->update([
+            'product_quantity' => $totalQuantity,
+        ]);
+
+        Log::create([
+            'model' => 'Stock Added',
+            'name' =>$product->product_name,
+            'actions' => 'Delete',
+            'performed_by' => $role,
+        ]);
+
+        return response()->json(['message' => 'Stock Added successfully']);
+    }
+
+    // to reduce stock
+    public function removeStock(Request $request, $id) {
+        $request->validate([
+            'product_quantity' => 'required|integer|min:1',
+        ]);
+        $role = $request->query('role');
+        $product = Product::findOrFail($id);
+
+        if ($product->product_quantity < $request->product_quantity) {
+            return response()->json([
+                'message' => 'Insufficient stock'
+            ], 400);
+        }
+
+        $totalQuantity = $product->product_quantity - $request->product_quantity;
+
+        $product->update([
+            'product_quantity' => $totalQuantity,
+        ]);
+
+        Log::create([
+            'model' => 'Stock Reduced',
+            'name' =>$product->product_name,
+            'actions' => 'Delete',
+            'performed_by' => $role,
+        ]);
+
+        return response()->json(['message' => 'Stock Added successfully']);
     }
 
     // function to get category in dropdown
@@ -153,6 +190,7 @@ class ProductController extends Controller
             'product_name' => 'required|string',
             'product_description' => 'required|string',
             'product_price' => 'required|numeric|min:0',
+            'product_quantity' => 'required|integer|min:1',
             'category_id' => 'required|string',
             'product_company' => 'required|string',
         ]);
@@ -170,6 +208,7 @@ class ProductController extends Controller
             'product_description' => $request->product_description,
             'product_price' => $request->product_price,
             'product_image' => $imageName,
+            'product_quantity' => $request->product_quantity,
             'category_id' => $request->category_id,
             'product_company' => $request->product_company,
         ]);

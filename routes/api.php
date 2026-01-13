@@ -68,3 +68,10 @@ Route::delete('/category/{id}', [CategoryController::class ,'deleteCategory']);
 // to add log-out log
 Route::post('/user/logout', [UserController::class, 'logout']);
 
+// to add stock quantity
+Route::post('/product/{id}/add-stock', [ProductController::class, 'addStock']);
+
+// to remove stock quantity
+Route::post('/product/{id}/remove-stock', [ProductController::class, 'removeStock']);
+
+Route::get('user/user-profile/{id}', [UserController::class, 'userDetail']);
