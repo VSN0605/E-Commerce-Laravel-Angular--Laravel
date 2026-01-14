@@ -6,6 +6,7 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Log;
+use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
@@ -18,7 +19,6 @@ class ProductController extends Controller
             'product_quantity' => 'required|integer|min:1',
             'category_id' => 'required|integer',
             'product_company' => 'required|string',
-            'created_by' => 'required|string',
         ]);
 
         $imageName = null;
@@ -29,6 +29,8 @@ class ProductController extends Controller
             $file->move(public_path('images'), $imageName);
         }
 
+        $role = Auth::user()->user_role;
+
         Product::create([
             'product_name' => $request->product_name,
             'product_description' => $request->product_description,
@@ -37,14 +39,14 @@ class ProductController extends Controller
             'product_quantity' => $request->product_quantity,
             'category_id' => $request->category_id,
             'product_company' => $request->product_company,
-            'created_by' => $request->created_by,
+            'created_by' => $role,
         ]);
 
         Log::create([
             'model' => 'Product',
             'name' => $request->product_name,
             'actions' => 'Create',
-            'performed_by' => $request->created_by,
+            'performed_by' => $role,
         ]);
 
         return response()->json([
@@ -54,7 +56,8 @@ class ProductController extends Controller
 
     // function to get all products
     public function getProducts(Request $request) {
-        $role = $request->query('role');
+        
+        $role = Auth::user()->user_role;
 
         $product_query = Product::select();
 
@@ -69,7 +72,7 @@ class ProductController extends Controller
 
     // to get product detail for view product
     public function getProductDetail($id) {
-        $product = Product::with('category') // optional
+        $product = Product::with('category')
         ->where('id', $id)
         ->first();
 
@@ -87,7 +90,9 @@ class ProductController extends Controller
         $request->validate([
             'product_quantity' => 'required|integer|min:1',
         ]);
-        $role = $request->query('role');
+
+        $role = Auth::user()->user_role;
+
         $product = Product::findOrFail($id);
 
         $totalQuantity = $request->product_quantity + $product->product_quantity;
@@ -97,9 +102,9 @@ class ProductController extends Controller
         ]);
 
         Log::create([
-            'model' => 'Stock Added',
+            'model' => 'Product',
             'name' =>$product->product_name,
-            'actions' => 'Delete',
+            'actions' => 'Stock Add',
             'performed_by' => $role,
         ]);
 
@@ -111,7 +116,9 @@ class ProductController extends Controller
         $request->validate([
             'product_quantity' => 'required|integer|min:1',
         ]);
-        $role = $request->query('role');
+
+        $role = Auth::user()->user_role;
+
         $product = Product::findOrFail($id);
 
         if ($product->product_quantity < $request->product_quantity) {
@@ -127,9 +134,9 @@ class ProductController extends Controller
         ]);
 
         Log::create([
-            'model' => 'Stock Reduced',
+            'model' => 'Product',
             'name' =>$product->product_name,
-            'actions' => 'Delete',
+            'actions' => 'Stock Reduce',
             'performed_by' => $role,
         ]);
 
@@ -160,9 +167,10 @@ class ProductController extends Controller
     // to delete product
     public function deleteProduct(Request $request, $id) {
         $product = Product::findOrFail($id);
-        $role = $request->query('role');
+
+        $role = Auth::user()->user_role;
+
         $productName = $product->product_name;
-        // $performedBy = $product->created_by;
         
         $product->delete();
 
@@ -185,6 +193,8 @@ class ProductController extends Controller
     public function updateProduct(Request $request, $id)
     {
         $product = Product::findOrFail($id);
+
+        $role = Auth::user()->user_role;
 
         $request->validate([
             'product_name' => 'required|string',
@@ -217,7 +227,7 @@ class ProductController extends Controller
             'model' => 'Product',
             'name' => $request->product_name,
             'actions' => 'Update',
-            'performed_by' => $request->created_by,
+            'performed_by' => $role,
         ]);
 
         return response()->json(['message' => 'Product updated successfully']);

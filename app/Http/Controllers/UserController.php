@@ -5,9 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Log;
-// use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -44,7 +43,10 @@ class UserController extends Controller
 
     // to get all users
     public function index(Request $request) {
-        $role = $request->query('role');
+
+        // $authUser = $request->user(); 
+        // $role = $authUser->user_role;
+        $role = Auth::user()->user_role;
 
         $user_query = User::select();
         if($role != 'admin'){
@@ -57,8 +59,11 @@ class UserController extends Controller
     }
 
     // to get user-detail on profile page
-    public function userDetail($id)
+    public function userDetail(Request $request)
     {
+        $authUser = $request->user(); 
+        $id = $authUser->id;
+
         $userDetail = User::where('id', $id)->first();
 
         return response()->json($userDetail, 200);
@@ -74,8 +79,10 @@ class UserController extends Controller
     }
 
     public function logout(Request $request) {
-        $role = $request->query('role');
-        $userName = $request->query('user_name');
+
+        $authUser = $request->user(); 
+        $role = $authUser->user_role;
+        $userName = $authUser->user_name;
 
         Log::create([
             'model' => 'User',
